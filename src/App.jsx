@@ -173,21 +173,12 @@ export default function SistemaTicketsCDA() {
       };
       
       reader.readAsDataURL(image);
-    } catch (err) {
-      console.error('Error:', err);
-      setError(err.message || 'Error al extraer datos del ticket');
-      setLoading(false);
-    }
-  };
-        setExtractedData(parsed);
-      };
-      reader.readAsDataURL(image);
-    } catch (err) {
-      setError('Error al extraer datos: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (err) {
+    console.error('Error:', err);
+    setError(err.message || 'Error al extraer datos del ticket');
+    setLoading(false);
+  }
+};
 
   const enviarTicket = async () => {
     if (!extractedData) return;
