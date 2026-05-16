@@ -139,7 +139,26 @@ export default function SistemaTicketsCDA() {
   setError(null);
 
   try {
-    const base64Data = imgDataUrl.split(',')[1];
+    // ✅ VALIDACIÓN 1: Verificar que imgDataUrl existe y es string
+    if (!imgDataUrl || typeof imgDataUrl !== 'string') {
+      throw new Error('Imagen inválida: no se recibió una URL de datos válida');
+    }
+
+    // ✅ VALIDACIÓN 2: Verificar que es un Data URL
+    if (!imgDataUrl.startsWith('data:')) {
+      throw new Error('Formato de imagen inválido: debe ser un Data URL (data:image/...)');
+    }
+
+    // ✅ VALIDACIÓN 3: Extraer base64 con verificación
+    const parts = imgDataUrl.split(',');
+    if (parts.length < 2) {
+      throw new Error('Formato de Data URL inválido: no se encontró la coma separadora');
+    }
+    
+    const base64Data = parts[1];
+    if (!base64Data || base64Data.length === 0) {
+      throw new Error('No se pudo extraer los datos base64 de la imagen');
+    }
     
     const response = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDBU_PsbXCSTDwavpyZV2cxGVbo6EYGotQ',
@@ -176,7 +195,7 @@ export default function SistemaTicketsCDA() {
     setShowPreview(true);
     
   } catch (err) {
-    console.error('Error:', err);
+    console.error('Error en extractData:', err);
     setError(err.message || 'Error desconocido');
   } finally {
     setLoading(false);
