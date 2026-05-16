@@ -224,3 +224,5 @@ Si algo no funciona, revisa estos archivos:
 ---
 
 🚀 **¡Disfruta tu sistema!**
+
+
