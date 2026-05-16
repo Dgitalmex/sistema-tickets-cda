@@ -8,9 +8,10 @@
       "destination": "/index.html"
     }
   ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs20.x"
+"functions": {
+    "api/extract-ticket.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
   }
 }
