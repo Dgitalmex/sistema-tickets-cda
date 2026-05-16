@@ -145,12 +145,11 @@ export default function SistemaTicketsCDA() {
         const base64 = reader.result.split(',')[1];
         
        // Llamar directamente a Anthropic API
-const response = await fetch('https://api.anthropic.com/v1/messages', {
+const response = await fetch('https://anthropic-proxy.dgitalmex.workers.dev', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-api-key': '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,',
-    'anthropic-version': '2023-06-01'
+   
   },
   body: JSON.stringify({
     model: 'claude-sonnet-4-20250514',
