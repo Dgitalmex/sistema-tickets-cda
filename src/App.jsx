@@ -134,70 +134,54 @@ export default function SistemaTicketsCDA() {
   };
 
 
-  const extractData = async () => {
-    if (!image) return;
-    setLoading(true);
-    setError(null);
+  const extractData = async (imgDataUrl) => {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const base64Data = imgDataUrl.split(',')[1];
     
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result.split(',')[1];
-        
-       // Llamar directamente a Anthropic API
-const response = await fetch('https://anthropic-proxy.dgitalmex.workers.dev', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-   
-  },
-  body: JSON.stringify({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
-    messages: [{
-      role: 'user',
-      content: [
-        {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: image.type,
-            data: base64
-          }
-        },
-        {
-          type: 'text',
-          text: 'Extrae la información del ticket en JSON: {folio, sucursal, vendedor, total, articulos}. Responde SOLO el JSON.'
-        }
-      ]
-    }]
-  })
-});
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDBU_PsbXCSTDwavpyZV2cxGVbo6EYGotQ',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: 'Extrae estos datos del ticket: folio, fecha, hora, vendedor, productos (nombre, cantidad, precio), total. Responde SOLO con JSON válido, sin markdown ni explicaciones.' },
+              { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+            ]
+          }]
+        })
+      }
+    );
 
-if (!response.ok) {
-  const errorData = await response.json();
-  throw new Error(errorData.error?.message || 'Error al procesar la imagen');
-}
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Error en Gemini API');
+    }
 
-const data = await response.json();
-const parsed = JSON.parse(data.content[0].text);        
-        // Si el usuario es de una tienda específica, pre-llenar la tienda
-        if (usuarioLogueado && usuarioLogueado.rol === 'tienda') {
-          parsed.tienda = usuarioLogueado.tienda;
-        }
-        
-        setExtractedData(parsed);
-        setLoading(false);
-      };
-      
-      reader.readAsDataURL(image);
-      } catch (err) {
+    const data = await response.json();
+    const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!textResponse) {
+      throw new Error('Respuesta vacía de Gemini');
+    }
+
+    const cleanJson = textResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(cleanJson);
+
+    setExtractedData(parsed);
+    setShowPreview(true);
+    
+  } catch (err) {
     console.error('Error:', err);
-    setError(err.message || 'Error al extraer datos del ticket');
+    setError(err.message || 'Error desconocido');
+  } finally {
     setLoading(false);
   }
 };
-
   const enviarTicket = async () => {
     if (!extractedData) return;
     
