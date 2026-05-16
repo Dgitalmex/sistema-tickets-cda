@@ -131,20 +131,17 @@ export default function SistemaTicketsCDA() {
       reader.onloadend = () => setImagenEvidenciaPreview(reader.result);
       reader.readAsDataURL(file);
     }
-  };
 
+  const enviarTicket = async () => {
+    if (!extractedData) return;
+    const extractData = async () => {
+  if (!imagenBase64) {
+    alert('Sube una imagen primero');
+    return;
+  }
 
-  const extractData = async () => {
-    if (!image) return;
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result.split(',')[1];
-        
-      // Llamar a Google Gemini API
+  setExtrayendo(true);
+  try {
     const base64Data = imagenBase64.split(',')[1];
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDBU_PsbXCSTDwavpyZV2cxGVbo6EYGotQ`, {
@@ -177,17 +174,13 @@ export default function SistemaTicketsCDA() {
       const extracted = JSON.parse(jsonMatch[0]);
       setDatosExtraidos(extracted);
     }
-      
-      } catch (err) {
-    console.error('Error:', err);
-    setError(err.message || 'Error al extraer datos del ticket');
-    setLoading(false);
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al extraer datos');
+  } finally {
+    setExtrayendo(false);
   }
 };
-
-  const enviarTicket = async () => {
-    if (!extractedData) return;
-    
     // Validar campos obligatorios
     if (!extractedData.tienda || extractedData.tienda === '') {
       alert('⚠️ El campo TIENDA es obligatorio');
