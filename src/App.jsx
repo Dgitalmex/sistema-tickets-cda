@@ -144,53 +144,40 @@ export default function SistemaTicketsCDA() {
       reader.onloadend = async () => {
         const base64 = reader.result.split(',')[1];
         
-       // Llamar directamente a Anthropic API
-const response = await fetch('https://anthropic-proxy.dgitalmex.workers.dev', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-   
-  },
-  body: JSON.stringify({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
-    messages: [{
-      role: 'user',
-      content: [
-        {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: image.type,
-            data: base64
-          }
-        },
-        {
-          type: 'text',
-          text: 'Extrae la información del ticket en JSON: {folio, sucursal, vendedor, total, articulos}. Responde SOLO el JSON.'
-        }
-      ]
-    }]
-  })
-});
+      // Llamar a Google Gemini API
+    const base64Data = imagenBase64.split(',')[1];
+    
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDBU_PsbXCSTDwavpyZV2cxGVbo6EYGotQ`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {
+              text: 'Extrae la información del ticket en JSON: {folio, sucursal, vendedor, total, articulos}. Responde SOLO el JSON.'
+            },
+            {
+              inline_data: {
+                mime_type: 'image/jpeg',
+                data: base64Data
+              }
+            }
+          ]
+        }]
+      })
+    });
 
-if (!response.ok) {
-  const errorData = await response.json();
-  throw new Error(errorData.error?.message || 'Error al procesar la imagen');
-}
-
-const data = await response.json();
-const parsed = JSON.parse(data.content[0].text);        
-        // Si el usuario es de una tienda específica, pre-llenar la tienda
-        if (usuarioLogueado && usuarioLogueado.rol === 'tienda') {
-          parsed.tienda = usuarioLogueado.tienda;
-        }
-        
-        setExtractedData(parsed);
-        setLoading(false);
-      };
+    const data = await response.json();
+    const jsonText = data.candidates[0].content.parts[0].text;
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+    
+    if (jsonMatch) {
+      const extracted = JSON.parse(jsonMatch[0]);
+      setDatosExtraidos(extracted);
+    }
       
-      reader.readAsDataURL(image);
       } catch (err) {
     console.error('Error:', err);
     setError(err.message || 'Error al extraer datos del ticket');
