@@ -544,7 +544,7 @@ export default function SistemaTicketsCDA() {
                     <img src={imagePreview} alt="Ticket" className="w-full rounded-lg shadow-lg mb-4" />
                     <div className="flex gap-2">
                       <button
-                        onClick={extractData}
+                        onClick={() => extractData(imagePreview)}
                         disabled={loading}
                         className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 flex items-center justify-center gap-2"
                       >
