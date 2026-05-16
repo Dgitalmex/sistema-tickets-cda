@@ -144,25 +144,44 @@ export default function SistemaTicketsCDA() {
       reader.onloadend = async () => {
         const base64 = reader.result.split(',')[1];
         
-        // Llamar a nuestra función serverless en lugar de directamente a Anthropic
-        const response = await fetch('/api/extract-ticket', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            imageData: base64,
-            mimeType: image.type
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Error al procesar la imagen');
+       // Llamar directamente a Anthropic API
+const response = await fetch('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': '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,',
+    'anthropic-version': '2023-06-01'
+  },
+  body: JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1024,
+    messages: [{
+      role: 'user',
+      content: [
+        {
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: image.type,
+            data: base64
+          }
+        },
+        {
+          type: 'text',
+          text: 'Extrae la información del ticket en JSON: {folio, sucursal, vendedor, total, articulos}. Responde SOLO el JSON.'
         }
-        
-        const parsed = await response.json();
-        
+      ]
+    }]
+  })
+});
+
+if (!response.ok) {
+  const errorData = await response.json();
+  throw new Error(errorData.error?.message || 'Error al procesar la imagen');
+}
+
+const data = await response.json();
+const parsed = JSON.parse(data.content[0].text);        
         // Si el usuario es de una tienda específica, pre-llenar la tienda
         if (usuarioLogueado && usuarioLogueado.rol === 'tienda') {
           parsed.tienda = usuarioLogueado.tienda;
