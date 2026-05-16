@@ -152,7 +152,7 @@ const response = await fetch('https://anthropic-proxy.dgitalmex.workers.dev', {
    
   },
   body: JSON.stringify({
-    model: 'claude-3-sonnet-20240229',
+    model: 'claude-3-haiku-20240307',
     max_tokens: 1024,
     messages: [{
       role: 'user',
