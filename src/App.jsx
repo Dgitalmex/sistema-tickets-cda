@@ -38,6 +38,7 @@ export default function SistemaTicketsCDA() {
   const [imagenEvidencia, setImagenEvidencia] = useState(null);
   const [imagenEvidenciaPreview, setImagenEvidenciaPreview] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tickets, setTickets] = useState([]);
@@ -168,7 +169,7 @@ export default function SistemaTicketsCDA() {
         body: JSON.stringify({
           contents: [{
             parts: [
-              { text: 'Extrae estos datos del ticket: folio, fecha, hora, vendedor, productos (nombre, cantidad, precio), total. Responde SOLO con JSON válido, sin markdown ni explicaciones.' },
+              { text: 'Eres un sistema de extracción de datos de tickets de venta de la cremería CDA. Analiza la imagen y extrae:\n\n- TN (folio/número de ticket): busca "TN:" seguido de números\n- Fecha: formato DD/MM/YYYY o DD/MM/YY\n- Hora: formato HH:MM\n- Vendedor: nombre después de "Atendido por:" o similar\n- Productos: array con cada artículo, cada uno con {nombre: string, cantidad: number, precio: number}\n- Total: el monto total de la venta\n\nResponde SOLO con JSON válido, sin explicaciones ni markdown:\n{"folio":"","fecha":"","hora":"","vendedor":"","productos":[{"nombre":"","cantidad":0,"precio":0}],"total":""}' }
               { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
             ]
           }]
